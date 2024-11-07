@@ -49,7 +49,7 @@ public class PlainTokenBucket {
 
     private void sleep() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(333);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
