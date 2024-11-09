@@ -1,12 +1,9 @@
 package TokenBucket.Redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
+import Utils.AbstractRedisConnector;
 
-public class RedisTokenBucket {
+public class RedisTokenBucket extends AbstractRedisConnector {
 
-    private RedisAsyncCommands<String, String> asyncCommands;
 
     private static final String REFILL_TIME = ":refillTime";
     private static final String NUM_TOKENS_IN_BUCKET = ":numTokensInBucket";
@@ -16,11 +13,12 @@ public class RedisTokenBucket {
     private final int maxBucketCapacity;
 
     public RedisTokenBucket(int maxBucketCapacity) {
+        super();
         this.maxBucketCapacity = maxBucketCapacity;
         this.newTokenAfter = 333;
-        initRedisClient();
     }
 
+    @Override
     public void handleNewRequest(String user, String serviceName) {
         String userKey = getKey(user, serviceName);
         synchronized (userKey) {
@@ -53,9 +51,4 @@ public class RedisTokenBucket {
         return serviceName + ":" + user;
     }
 
-    private void initRedisClient() {
-        RedisClient redisClient = RedisClient.create("redis://localhost:6379");
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-        asyncCommands = connection.async();
-    }
 }
