@@ -1,7 +1,7 @@
 package LeakingBucket.Plain;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,16 +17,15 @@ public class PlainLeakingBucket {
 
     public PlainLeakingBucket(int maxBucketCapacity) {
         this.maxBucketCapacity = maxBucketCapacity;
-        userServiceCounters = new HashMap<>();
+        userServiceCounters = new ConcurrentHashMap<>();
         executorService = Executors.newSingleThreadExecutor();
         init();
     }
 
     public void handeleNewRequest(String user, String serviceName) {
         BucketManager bucketManager;
-        if (!userServiceCounters.containsKey(serviceName + ":" + user)) {
-            userServiceCounters.put(serviceName + ":" + user, new BucketManager(maxBucketCapacity));
-        }
+        String userKey = getKey(user, serviceName);
+        userServiceCounters.computeIfAbsent(userKey, k -> new BucketManager(maxBucketCapacity));
         bucketManager = userServiceCounters.get(serviceName + ":" + user);
         bucketManager.insertInBucket();
     }
@@ -36,6 +35,10 @@ public class PlainLeakingBucket {
         isRunning = false;
         executorService.shutdownNow();
         System.out.println("Executor service is stopped successfully");
+    }
+
+    private String getKey(String user, String serviceName) {
+        return serviceName + ":" + user;
     }
 
     private void init() {
