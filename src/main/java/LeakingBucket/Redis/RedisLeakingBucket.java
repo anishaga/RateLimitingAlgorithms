@@ -32,8 +32,8 @@ public class RedisLeakingBucket extends AbstractRedisConnector {
         synchronized (userKey) {
             try {
                 if (asyncCommands.llen(userKey).get() < maxBucketCapacity) {
-                    asyncCommands.rpush(userKey, String.valueOf(System.currentTimeMillis()));
-                    asyncCommands.rpush(userKey + REQUEST, "User: " + user + ", ServiceName: " + serviceName);
+                    asyncCommands.rpush(userKey, String.valueOf(System.currentTimeMillis())).get();
+                    asyncCommands.rpush(userKey + REQUEST, "User: " + user + ", ServiceName: " + serviceName).get();
                 } else {
                     System.out.println("Hey, hold on! Get a glass of water. User: " + user + ", ServiceName: " + serviceName);
                 }
@@ -56,7 +56,7 @@ public class RedisLeakingBucket extends AbstractRedisConnector {
                         if (asyncCommands.llen(userKey).get() > 0 &&
                                 System.currentTimeMillis() - Long.parseLong(asyncCommands.lindex(userKey, 0).get()) >= processRequestAfter) {
                             String requestMetaData = asyncCommands.lpop(userKey + REQUEST).get();
-                            asyncCommands.lpop(userKey);
+                            asyncCommands.lpop(userKey).get();
                             // Process the request from it's metadata
                             System.out.println("requestMetaData: " + requestMetaData);
                         }

@@ -32,10 +32,10 @@ public class RedisTokenBucket extends AbstractRedisConnector {
 
                 if (numTokenInBucketNew > 0) {
                     --numTokenInBucketNew;
-                    asyncCommands.set(userKey + REFILL_TIME, String.valueOf(System.currentTimeMillis()));
-                    asyncCommands.set(userKey + NUM_TOKENS_IN_BUCKET, String.valueOf(numTokenInBucketNew));
+                    asyncCommands.set(userKey + REFILL_TIME, String.valueOf(System.currentTimeMillis())).get();
+                    asyncCommands.set(userKey + NUM_TOKENS_IN_BUCKET, String.valueOf(numTokenInBucketNew)).get();
                     System.out.println("Request Accepted " + user + ", ServiceName: " + serviceName);
-                    asyncCommands.expire(userKey + REFILL_TIME, (100 + (newTokenAfter * maxBucketCapacity)) / 1000);
+                    asyncCommands.expire(userKey + REFILL_TIME, (100 + (newTokenAfter * maxBucketCapacity)) / 1000).get();
                 } else {
                     System.out.println("Hey, hold on! Get a glass of water. User: " + user + ", ServiceName: " + serviceName);
                 }
